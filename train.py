@@ -83,9 +83,9 @@ train_ds = NewsDataset(X_train, y_train, tokenizer)
 val_ds = NewsDataset(X_val, y_val, tokenizer)
 test_ds = NewsDataset(X_test, tokenizer=tokenizer)
 
-train_loader = DataLoader(train_ds, batch_size=16, shuffle=True)
-val_loader = DataLoader(val_ds, batch_size=32)
-test_loader = DataLoader(test_ds, batch_size=32)
+train_loader = DataLoader(train_ds, batch_size=8, shuffle=True)
+val_loader = DataLoader(val_ds, batch_size=8)
+test_loader = DataLoader(test_ds, batch_size=8)
 
 # Optimizer
 optimizer = AdamW(model.parameters(), lr=2e-5)
