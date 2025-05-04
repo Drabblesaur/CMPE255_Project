@@ -11,4 +11,5 @@ dependencies = [
     "seaborn>=0.13.2",
     "torch>=2.7.0",
     "transformers>=4.51.3",
+    "wandb>=0.19.10",
 ]
