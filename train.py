@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score, f1_score
 from tqdm import tqdm
 import wandb
+import argparse
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -62,7 +63,16 @@ df_test = pd.read_csv("Test.csv")
 X_test = df_test["text"].astype(str).tolist()
 
 # Model and tokenizer
-MODEL_NAME = "bert-base-uncased"
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--model_name",
+    type=str,
+    default="hkunlp/instructor-xl",
+    help="Huggingface model name",
+)
+args = parser.parse_args()
+MODEL_NAME = args.model_name
+
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=3).to(
     device
@@ -220,6 +230,25 @@ test_preds = predict(model, test_loader)
 test_labels = [ID2LABEL[i] for i in test_preds]
 pd.Series(test_labels).to_csv("predictions.csv", index=False, header=False)
 print("Test predictions saved to predictions.csv")
+
+# If test set has labels, you can evaluate. If not, skip this block.
+if "bias_rating" in df_test.columns:
+    y_test = df_test["bias_rating"].map(LABEL2ID).tolist()
+    test_acc = accuracy_score(y_test, test_preds)
+    test_f1 = f1_score(y_test, test_preds, average="macro")
+    test_report = classification_report(
+        y_test, test_preds, target_names=LABEL2ID.keys(), output_dict=True
+    )
+    print("Test Accuracy:", test_acc)
+    print("Test F1 (macro):", test_f1)
+    print(classification_report(y_test, test_preds, target_names=LABEL2ID.keys()))
+    # Log test metrics to wandb
+    wandb.summary["test_accuracy"] = test_acc
+    wandb.summary["test_f1_macro"] = test_f1
+    for k in LABEL2ID.keys():
+        wandb.summary[f"test_f1_{k}"] = test_report[k]["f1-score"]
+        wandb.summary[f"test_precision_{k}"] = test_report[k]["precision"]
+        wandb.summary[f"test_recall_{k}"] = test_report[k]["recall"]
 
 # Log predictions and code as artifacts
 pred_artifact = wandb.Artifact("test_predictions", type="predictions")
