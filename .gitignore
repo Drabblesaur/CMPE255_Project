@@ -1,3 +1,4 @@
 *.pt
 *.csv
 *.lock
+wandb/
