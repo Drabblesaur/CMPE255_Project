@@ -13,9 +13,10 @@
 
 # List of models to try
 # MODELS=("bert-base-uncased" "hkunlp/instructor-xl" "sentence-transformers/allenai-specter" "all-mpnet-base-v2")
-MODELS=("sentence-transformers/all-mpnet-base-v2")
+# MODELS=("sentence-transformers/all-mpnet-base-v2")
+MODELS=("microsoft/deberta-v3-large")
 
-source ~/.venv/bin/activate
+source /home/017534556/projects/255_final/.venv/bin/activate
 
 # Make sure logs directory exists
 mkdir -p /home/017534556/projects/255_final/logs
