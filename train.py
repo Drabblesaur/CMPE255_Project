@@ -67,21 +67,23 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--model_name",
     type=str,
-    default="hkunlp/instructor-xl",
+    default="microsoft/deberta-v3-large",
     help="Huggingface model name",
 )
 args = parser.parse_args()
 MODEL_NAME = args.model_name
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+max_length = min(tokenizer.model_max_length, 1024)
+print(f"Using max_length={max_length} for tokenization.")
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=3).to(
     device
 )
 
 # Datasets and loaders
-train_ds = NewsDataset(X_train, y_train, tokenizer)
-val_ds = NewsDataset(X_val, y_val, tokenizer)
-test_ds = NewsDataset(X_test, tokenizer=tokenizer)
+train_ds = NewsDataset(X_train, y_train, tokenizer, max_length=max_length)
+val_ds = NewsDataset(X_val, y_val, tokenizer, max_length=max_length)
+test_ds = NewsDataset(X_test, tokenizer=tokenizer, max_length=max_length)
 
 train_loader = DataLoader(train_ds, batch_size=8, shuffle=True)
 val_loader = DataLoader(val_ds, batch_size=8)
@@ -97,7 +99,7 @@ wandb.init(
         "model": MODEL_NAME,
         "epochs": 5,
         "batch_size": 16,
-        "max_length": 256,
+        "max_length": max_length,
         "optimizer": "AdamW",
         "lr": 2e-5,
     },
